@@ -13,7 +13,7 @@ class Year {
    private boolean isLeapYear;
    private int firstDayOfYear;
    private int dayOfYear;
-   private int numberOfLeapYears;
+   private int dayOfWeek;
 
    // zero argument constructor
    public Year() {
@@ -42,6 +42,7 @@ class Year {
       this.setIsLeapYear(year);
       this.setFirstDayOfYear(year);
       this.setDayOfYear(month, day, year);
+      this.setDayOfWeek(month, day, year);
    }
 
    /* isLeapYear getter/setters */
@@ -102,15 +103,30 @@ class Year {
             + getNumberOfLeapYears(year1, year2) + " }");
    }
 
+   /* dayOfWeek getter/setters */
+   public int getDayOfWeek(int month, int day, int year) {
+      return APCalendar.dayOfWeek(month, day, year);
+   }
+
+   private void setDayOfWeek(int month, int day, int year) { // this is private to avoid tampering
+      this.dayOfWeek = APCalendar.dayOfWeek(month, day, year);
+   }
+
+   /* firstDayOfYearToString formatted to be mapped to JSON */
+   public String dayOfWeekToString() {
+      return ("{ \"month\": " + this.month + ", " + "\"day\": " + this.day + ", " + "\"year\": " + this.year + ", "
+            + "\"dayOfWeek\": " + this.dayOfWeek + " }");
+   }
+
    /* standard toString placeholder until class is extended */
    public String toString() {
-      return dayOfYearToString();
+      return dayOfWeekToString();
    }
 
    public static void main(String[] args) {
       Year year = new Year();
-      // year.setYear(2022);
-      year.setDate(3, 4, 2028);
-      System.out.println(year.numberOfLeapYearsToString(2000, 2024));
+      year.setYear(2022);
+      year.setDate(3, 5, 2028);
+      System.out.println(year.dayOfWeekToString());
    }
 }
