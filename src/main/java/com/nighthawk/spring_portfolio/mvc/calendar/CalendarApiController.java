@@ -1,5 +1,14 @@
 package com.nighthawk.spring_portfolio.mvc.calendar;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,7 +98,7 @@ public class CalendarApiController {
       throws JsonMappingException, JsonProcessingException {
     // Backend Year Object
     Year year_obj = new Year();
-    year_obj.setDate(month, day, year); // evaluates all the method implementations
+    year_obj.setDate(month, day, year);
 
     // Turn Year Object into JSON
     ObjectMapper mapper = new ObjectMapper();
@@ -98,4 +107,35 @@ public class CalendarApiController {
     return ResponseEntity.ok(json); // JSON response, see ExceptionHandlerAdvice for throws
   }
 
+  private JSONObject body; // body for json return
+  private HttpStatus status; // body for json return
+
+  // onThisDay wikimedia API call using own api call
+  @GetMapping("/onThisDay/{month}/{day}/{type}") // added to end of prefix as endpoint
+  public ResponseEntity<JSONObject> onThisDay(@PathVariable int month, @PathVariable int day, @PathVariable String type)
+      throws JsonMappingException, JsonProcessingException {
+    try { // APIs can fail (ie Internet or Service down)
+      HttpRequest request = HttpRequest.newBuilder()
+          .uri(URI.create("https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/" + type + "/" + month + "/" + day))
+          .method("GET", HttpRequest.BodyPublishers.noBody())
+          .build();
+
+      // RapidAPI request and response
+      HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+      // JSONParser extracts text body and parses to JSONObject
+      this.body = (JSONObject) new JSONParser().parse(response.body());
+      this.status = HttpStatus.OK; // 200 success
+    } catch (Exception e) { // capture failure info
+      HashMap<String, String> status = new HashMap<>();
+      status.put("status", "RapidApi failure: " + e);
+
+      // Setup object for error
+      this.body = (JSONObject) status;
+      this.status = HttpStatus.INTERNAL_SERVER_ERROR; // 500 error
+    }
+
+    // return JSONObject in RESTful style
+    return new ResponseEntity<>(this.body, this.status);
+  }
 }
