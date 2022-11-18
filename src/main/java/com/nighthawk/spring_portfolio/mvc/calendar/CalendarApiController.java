@@ -32,7 +32,7 @@ public class CalendarApiController {
       throws JsonMappingException, JsonProcessingException {
     // Backend Year Object
     Year year_obj = new Year();
-    year_obj.setYear(year); // evaluates Leap Year
+    year_obj.setYear(year); // evaluates Leap Year & firstDayOfYear
 
     // Turn Year Object into JSON
     ObjectMapper mapper = new ObjectMapper();
@@ -47,7 +47,7 @@ public class CalendarApiController {
       throws JsonMappingException, JsonProcessingException {
     // Backend Year Object
     Year year_obj = new Year();
-    year_obj.setYear(year); // evaluates Leap Year
+    year_obj.setYear(year); // evaluates Leap Year & firstDayOfYear
 
     // Turn Year Object into JSON
     ObjectMapper mapper = new ObjectMapper();
@@ -61,11 +61,25 @@ public class CalendarApiController {
       throws JsonMappingException, JsonProcessingException {
     // Backend Year Object
     Year year_obj = new Year();
-    year_obj.setDate(month, day, year); // evaluates Leap Year
+    year_obj.setDate(month, day, year); // evaluates all the method implementations
 
     // Turn Year Object into JSON
     ObjectMapper mapper = new ObjectMapper();
     JsonNode json = mapper.readTree(year_obj.dayOfYearToString()); // this requires exception handling
+
+    return ResponseEntity.ok(json); // JSON response, see ExceptionHandlerAdvice for throws
+  }
+
+  @GetMapping("/numberOfLeapYears/{year1}/{year2}")
+  public ResponseEntity<JsonNode> getNumberOfLeapYears(@PathVariable int year1, @PathVariable int year2)
+      throws JsonMappingException, JsonProcessingException {
+    // Backend Year Object
+    Year year_obj = new Year();
+
+    // Turn Year Object into JSON
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode json = mapper.readTree(year_obj.numberOfLeapYearsToString(year1, year2)); // this requires exception
+                                                                                       // handling
 
     return ResponseEntity.ok(json); // JSON response, see ExceptionHandlerAdvice for throws
   }

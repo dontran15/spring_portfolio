@@ -87,6 +87,21 @@ class Year {
             + "\"dayOfYear\": " + this.dayOfYear + " }");
    }
 
+   /* dayOfYear getter/setters */
+   public int getNumberOfLeapYears(int year1, int year2) {
+      return APCalendar.numberOfLeapYears(year1, year2);
+   }
+
+   private void setNumberOfLeapYears(int year1, int year2) { // this is private to avoid tampering
+      this.dayOfYear = APCalendar.numberOfLeapYears(year1, year2);
+   }
+
+   /* firstDayOfYearToString formatted to be mapped to JSON */
+   public String numberOfLeapYearsToString(int year1, int year2) {
+      return ("{ \"year1\": " + year1 + ", " + "\"year2\": " + year2 + ", " + "\"numberOfLeapYears\": "
+            + getNumberOfLeapYears(year1, year2) + " }");
+   }
+
    /* standard toString placeholder until class is extended */
    public String toString() {
       return dayOfYearToString();
@@ -96,6 +111,6 @@ class Year {
       Year year = new Year();
       // year.setYear(2022);
       year.setDate(3, 4, 2028);
-      System.out.println(year);
+      System.out.println(year.numberOfLeapYearsToString(2000, 2024));
    }
 }
