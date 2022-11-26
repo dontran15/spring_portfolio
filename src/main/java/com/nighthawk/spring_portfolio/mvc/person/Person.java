@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Type;
@@ -67,8 +68,15 @@ public class Person {
     private Date dob;
 
     // health related info (other than age)
+    @Positive
+    @Size(min = 2, max = 4, message = "Height (reasonable)")
     private double height; // in inches
+
+    @Positive
+    @Size(min = 2, max = 4, message = "Weight (reasonable)")
     private double weight; // in lb
+
+    @NotEmpty
     private String gender;
 
     /*
