@@ -55,10 +55,18 @@ public class StepTracker {
         for (String key : stats.keySet()) {
             addDailySteps((int) stats.get(key).get("steps"));
         }
+    }
 
-        person.setActiveDays(activeDays);
-        person.setTotalSteps(totalSteps);
-        person.setAverageSteps(averageSteps());
+    public String exerciseReport() {
+        StepTracker tr = new StepTracker(this.person, this.person.getStepGoal());
+        tr.calculateSteps(this.person);
+
+        return ("{ \"stepGoal\": " + this.stepGoal + ", " + "\"totalSteps\": " + this.totalSteps + ", "
+                + "\"daysRecorded\": "
+                + this.daysRecorded + "\"activeDays\": " + activeDays() + ", " + "\"caloriesConsumed\": "
+                + caloriesConsumed(this.person) + "\"caloriesBurnt\": " + caloriesBurnt() + "\"netCalories\": "
+                + this.netCalories() + "\"netWeightReport\": " + netWeightReport() + "\"stats\": "
+                + this.person.getStats() + " }");
     }
 
     // FRQ Methods
@@ -82,18 +90,6 @@ public class StepTracker {
 
         double averageSteps = (double) getTotalSteps() / getDaysRecorded();
         return averageSteps;
-    }
-
-    public String exerciseReport() {
-        StepTracker tr = new StepTracker(this.person, this.person.getStepGoal());
-        tr.calculateSteps(this.person);
-
-        return ("{ \"stepGoal\": " + this.stepGoal + ", " + "\"totalSteps\": " + this.totalSteps + ", "
-                + "\"daysRecorded\": "
-                + this.daysRecorded + "\"activeDays\": " + activeDays() + ", " + "\"caloriesConsumed\": "
-                + caloriesConsumed(this.person) + "\"caloriesBurnt\": " + caloriesBurnt() + "\"netCalories\": "
-                + this.netCalories() + "\"netWeightReport\": " + netWeightReport() + "\"stats\": "
-                + this.person.getStats() + " }");
     }
 
     // main method (tester/unit test)
