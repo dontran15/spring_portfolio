@@ -4,15 +4,21 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
@@ -22,6 +28,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.nighthawk.spring_portfolio.mvc.steptracker.StepLog;
+import com.nighthawk.spring_portfolio.mvc.steptracker.StepTracker;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import lombok.AllArgsConstructor;
@@ -69,15 +77,22 @@ public class Person {
 
     // health related info (other than age)
     @Positive
-    @Size(min = 2, max = 4, message = "Height (reasonable)")
     private double height; // in inches
 
     @Positive
-    @Size(min = 2, max = 4, message = "Weight (reasonable)")
     private double weight; // in lb
 
     @NotEmpty
     private String gender;
+
+    // calculated by step tracker
+    private int activeDays;
+    private int totalSteps;
+    private double averageSteps;
+
+    // one Person has many StepLogs (relationship)
+    // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<StepLog> stepLogs = new ArrayList<>();
 
     /*
      * HashMap is used to store JSON for daily "stats"
@@ -103,6 +118,10 @@ public class Person {
         this.gender = gender.toLowerCase();
     }
 
+    // public int getStepGoal() { // TODO: change to actual calculation
+    // return 10000;
+    // }
+
     // A custom getter to return age from dob attribute
     public int getAge() {
         if (this.dob != null) {
@@ -113,16 +132,32 @@ public class Person {
     }
 
     // Calories required to burn per day to maintain current weight (Uses Active &
-    // Basal
-    // Metabolic Rate)
-    public int getCaloriesRequiredPerDay() {
-        if (this.dob != null && this.weight != 0 && this.height != 0) {
-            double BMR = 66.5 + (13.75 * weight / 2.205) + (5.003 * this.height * 2.54) - (6.75 * getAge());
-            double AMR = BMR * 1.55; // assumes moderate exercise each day, indicates calories needed to burn
-            return (int) Math.round(AMR - BMR);
+    // Basal Metabolic Rate)
+    public int getStepGoal() {
+        if (getDob() != null && getWeight() != 0 && getHeight() != 0) {
+            double AMR;
+            double BMR;
+
+            if (getGender().equals("male")) {
+                BMR = 66.5 + (13.75 * getWeight() / 2.205) + (5.003 * getHeight() * 2.54) - (6.75 * getAge());
+                AMR = BMR * 1.55;
+            } else if (getGender().equals("female")) {
+                BMR = 655.1 + (9.563 * getWeight() / 2.205) + (1.850 * getHeight() * 2.54) - (4.676 * getAge());
+                AMR = BMR * 1.55;
+            } else {
+                return -1;
+            }
+
+            // assumes moderate exercise each day, indicates calories needed to burn
+            return (int) (Math.round(AMR - BMR - 500) / 0.04);
         }
 
         return -1;
+    }
+
+    public void trackSteps() {
+        StepTracker stepTracker = new StepTracker(this, getStepGoal());
+        stepTracker.calculateSteps(this);
     }
 
     // toString Method
@@ -137,15 +172,15 @@ public class Person {
         // instantiates no args & all args
         Person personNoArgs = new Person();
         Person personAllArgs = new Person("someone@email.com", "12345", "Joe Jack",
-                new java.util.GregorianCalendar(2000, 0, 1).getTime(), 70, 165, "Male");
+                new java.util.GregorianCalendar(2005, 11, 8).getTime(), 68, 140, "Male");
 
         // toString prints
         System.out.println(personNoArgs.toString());
         System.out.println(personAllArgs.toString());
 
         // getCaloriesRequiredPerDay print tests
-        System.out.println(personNoArgs.getCaloriesRequiredPerDay());
-        System.out.println(personAllArgs.getCaloriesRequiredPerDay());
+        System.out.println(personNoArgs.getStepGoal());
+        System.out.println(personAllArgs.getStepGoal());
     }
 
 }
