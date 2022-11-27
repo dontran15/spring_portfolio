@@ -6,6 +6,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nighthawk.spring_portfolio.mvc.steptracker.StepLog;
 import com.nighthawk.spring_portfolio.mvc.steptracker.StepTracker;
 
@@ -138,18 +142,22 @@ public class PersonApiController {
     }
 
     @PostMapping(value = "/stepTrackerReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> personStatistics(@PathVariable long id) {
+    public ResponseEntity<JsonNode> personStatistics(@PathVariable long id)
+            throws JsonMappingException, JsonProcessingException {
         // find ID
         Optional<Person> optional = repository.findById((id));
 
         // Backend
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
-
             StepTracker tr = new StepTracker(person.getStepGoal()); // initialize tracker
 
+            // Turn stats Object into JSON
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(tr.exerciseReport(person)); // this requires exception handling
+
             // return Person with update Stats
-            return new ResponseEntity<>(tr.exerciseReport(person), HttpStatus.OK);
+            return new ResponseEntity<>(json, HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

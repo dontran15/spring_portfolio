@@ -3,6 +3,10 @@ package com.nighthawk.spring_portfolio.mvc.steptracker;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.nighthawk.spring_portfolio.mvc.person.Person;
 
 public class StepTracker {
@@ -55,8 +59,11 @@ public class StepTracker {
         }
     }
 
-    public String exerciseReport(Person person) {
+    public String exerciseReport(Person person) throws JsonMappingException, JsonProcessingException {
         this.calculateSteps(person);
+
+        ObjectWriter objWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String statsJson = objWriter.writeValueAsString(person.getStats());
 
         return ("{ \"personID\": " + person.getId() + ", " + "\"stepGoal\": " + this.stepGoal + ", "
                 + "\"totalSteps\": "
@@ -64,7 +71,7 @@ public class StepTracker {
                 + activeDays() + ", " + "\"caloriesConsumed\": " + caloriesConsumed(person) + ", "
                 + "\"caloriesBurnt\": "
                 + caloriesBurnt(person) + ", " + "\"netCalories\": " + this.netCalories(person) + ", "
-                + "\"netWeightReport\": " + netWeightReport(person) + ", " + "\"stats\": " + person.getStats() + " }");
+                + "\"netWeightReport\": " + netWeightReport(person) + ", " + "\"stats\": " + statsJson + " }");
     }
 
     // FRQ Methods
