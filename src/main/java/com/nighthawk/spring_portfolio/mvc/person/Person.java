@@ -85,11 +85,6 @@ public class Person {
     @NotEmpty
     private String gender;
 
-    // calculated by step tracker
-    private int activeDays;
-    private int totalSteps;
-    private double averageSteps;
-
     // one Person has many StepLogs (relationship)
     // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     // private List<StepLog> stepLogs = new ArrayList<>();
