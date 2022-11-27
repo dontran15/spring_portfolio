@@ -10,17 +10,15 @@ public class StepTracker {
     private int activeDays;
     private int totalSteps;
     private int daysRecorded;
-    private Person person;
 
-    public StepTracker(Person person, int stepGoal) {
-        this.person = person;
+    public StepTracker(int stepGoal) {
         this.stepGoal = stepGoal;
         this.totalSteps = 0;
         this.daysRecorded = 0;
     }
 
-    public double caloriesBurnt() {
-        return (totalSteps * 0.04);
+    public double caloriesBurnt(Person person) {
+        return (totalSteps * 0.04 + person.bmrCalculator() * daysRecorded);
     }
 
     public double caloriesConsumed(Person person) {
@@ -34,17 +32,17 @@ public class StepTracker {
         return caloriesConsumed;
     }
 
-    public double netCalories() {
-        return caloriesConsumed(this.person) - caloriesBurnt();
+    public double netCalories(Person person) {
+        return caloriesConsumed(person) - caloriesBurnt(person);
     }
 
-    public String netWeightReport() {
-        if (netCalories() > 50) {
-            return "You are gaining weight";
-        } else if (netCalories() < -50) {
-            return "You are losing weight";
+    public String netWeightReport(Person person) {
+        if (netCalories(person) > 200) {
+            return "\"Gaining weight\"";
+        } else if (netCalories(person) < -200) {
+            return "\"Losing weight\"";
         } else {
-            return "You are roughly maintaining your current weight";
+            return "\"Maintaining current weight\"";
         }
     }
 
@@ -57,16 +55,16 @@ public class StepTracker {
         }
     }
 
-    public String exerciseReport() {
-        StepTracker tr = new StepTracker(this.person, this.person.getStepGoal());
-        tr.calculateSteps(this.person);
+    public String exerciseReport(Person person) {
+        this.calculateSteps(person);
 
-        return ("{ \"stepGoal\": " + this.stepGoal + ", " + "\"totalSteps\": " + this.totalSteps + ", "
-                + "\"daysRecorded\": "
-                + this.daysRecorded + "\"activeDays\": " + activeDays() + ", " + "\"caloriesConsumed\": "
-                + caloriesConsumed(this.person) + "\"caloriesBurnt\": " + caloriesBurnt() + "\"netCalories\": "
-                + this.netCalories() + "\"netWeightReport\": " + netWeightReport() + "\"stats\": "
-                + this.person.getStats() + " }");
+        return ("{ \"personID\": " + person.getId() + ", " + "\"stepGoal\": " + this.stepGoal + ", "
+                + "\"totalSteps\": "
+                + this.totalSteps + ", " + "\"daysRecorded\": " + this.daysRecorded + ", " + "\"activeDays\": "
+                + activeDays() + ", " + "\"caloriesConsumed\": " + caloriesConsumed(person) + ", "
+                + "\"caloriesBurnt\": "
+                + caloriesBurnt(person) + ", " + "\"netCalories\": " + this.netCalories(person) + ", "
+                + "\"netWeightReport\": " + netWeightReport(person) + ", " + "\"stats\": " + person.getStats() + " }");
     }
 
     // FRQ Methods

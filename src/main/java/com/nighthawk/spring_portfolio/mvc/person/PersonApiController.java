@@ -6,7 +6,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.nighthawk.spring_portfolio.mvc.steptracker.StepLog;
+import com.nighthawk.spring_portfolio.mvc.steptracker.StepTracker;
+
 import java.util.*;
+
+import javax.transaction.Transactional;
+
 import java.text.SimpleDateFormat;
 
 @RestController
@@ -66,9 +72,9 @@ public class PersonApiController {
             @RequestParam("password") String password,
             @RequestParam("name") String name,
             @RequestParam("dob") String dobString,
-            @RequestParam("dob") double height,
-            @RequestParam("dob") double weight,
-            @RequestParam("dob") String gender) {
+            @RequestParam("height") double height,
+            @RequestParam("weight") double weight,
+            @RequestParam("gender") String gender) {
         Date dob;
         try {
             dob = new SimpleDateFormat("MM-dd-yyyy").parse(dobString);
@@ -99,7 +105,7 @@ public class PersonApiController {
     }
 
     /*
-     * The personStats API adds stats by Date to Person table
+     * The personStats API adds stats by Date to Person table (redundant)
      */
     @PostMapping(value = "/setStats", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Person> personStats(@RequestBody final Map<String, Object> stat_map) {
@@ -112,7 +118,7 @@ public class PersonApiController {
             // Extract Attributes from JSON
             Map<String, Object> attributeMap = new HashMap<>();
             for (Map.Entry<String, Object> entry : stat_map.entrySet()) {
-                // Add all attribute other thaN "date" to the "attribute_map"
+                // Add all attribute other than "date" to the "attribute_map"
                 if (!entry.getKey().equals("date") && !entry.getKey().equals("id"))
                     attributeMap.put(entry.getKey(), entry.getValue());
             }
@@ -121,6 +127,57 @@ public class PersonApiController {
             Map<String, Map<String, Object>> date_map = person.getStats();
             date_map.put((String) stat_map.get("date"), attributeMap);
             person.setStats(date_map); // BUG, needs to be customized to replace if existing or append if new
+            repository.save(person); // conclude by writing the stats updates
+
+            // return Person with update Stats
+            return new ResponseEntity<>(person, HttpStatus.OK);
+        }
+        // return Bad ID
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @PostMapping(value = "/stepTrackerReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> personStatistics(@PathVariable long id) {
+        // find ID
+        Optional<Person> optional = repository.findById((id));
+
+        // Backend
+        if (optional.isPresent()) { // Good ID
+            Person person = optional.get(); // value from findByID
+
+            StepTracker tr = new StepTracker(person.getStepGoal()); // initialize tracker
+
+            // return Person with update Stats
+            return new ResponseEntity<>(tr.exerciseReport(person), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping(value = "/setStepLog", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> personStepLog(@RequestParam("id") long id,
+            @RequestParam("date") String dateString,
+            @RequestParam("steps") int steps) {
+
+        // find the person by ID
+        Optional<Person> optional = repository.findById((id));
+        if (optional.isPresent()) { // Good ID
+            Person person = optional.get(); // value from findByID
+
+            List<StepLog> stepLogs = new ArrayList<StepLog>();
+
+            Date date;
+            try {
+                date = new SimpleDateFormat("MM-dd-yyyy").parse(dateString);
+            } catch (Exception e) {
+                return new ResponseEntity<>(dateString + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
+            }
+
+            StepLog stepLog = new StepLog(date, steps);
+            stepLogs.add(stepLog);
+            // person.setStepLogs(stepLogs);
+
             repository.save(person); // conclude by writing the stats updates
 
             // return Person with update Stats

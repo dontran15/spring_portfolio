@@ -126,33 +126,29 @@ public class Person {
         return -1;
     }
 
+    public double bmrCalculator() {
+        if (getGender().equals("male")) {
+            return 66.5 + (13.75 * getWeight() / 2.205) + (5.003 * getHeight() * 2.54) - (6.75 * getAge());
+        } else if (getGender().equals("female")) {
+            return 655.1 + (9.563 * getWeight() / 2.205) + (1.850 * getHeight() * 2.54) - (4.676 * getAge());
+        } else {
+            return -1;
+        }
+    }
+
+    public double amrCalculator() {
+        return bmrCalculator() * 1.55;
+    }
+
     // Calories required to burn per day to maintain current weight (Uses Active &
     // Basal Metabolic Rate)
     public int getStepGoal() {
         if (getDob() != null && getWeight() != 0 && getHeight() != 0) {
-            double AMR;
-            double BMR;
-
-            if (getGender().equals("male")) {
-                BMR = 66.5 + (13.75 * getWeight() / 2.205) + (5.003 * getHeight() * 2.54) - (6.75 * getAge());
-                AMR = BMR * 1.55;
-            } else if (getGender().equals("female")) {
-                BMR = 655.1 + (9.563 * getWeight() / 2.205) + (1.850 * getHeight() * 2.54) - (4.676 * getAge());
-                AMR = BMR * 1.55;
-            } else {
-                return -1;
-            }
-
             // assumes moderate exercise each day, indicates calories needed to burn
-            return (int) (Math.round(AMR - BMR - 500) / 0.04);
+            return (int) (Math.round(amrCalculator() - bmrCalculator() - 500) / 0.04);
         }
 
         return -1;
-    }
-
-    public void trackSteps() {
-        StepTracker stepTracker = new StepTracker(this, getStepGoal());
-        stepTracker.calculateSteps(this);
     }
 
     // toString Method
