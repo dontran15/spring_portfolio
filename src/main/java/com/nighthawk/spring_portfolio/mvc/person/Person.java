@@ -172,12 +172,21 @@ public class Person {
                 new java.util.GregorianCalendar(2005, 11, 8).getTime(), 68, 140, "Male");
 
         // toString prints
+        System.out.println("--------------------");
+        System.out.println("NoArgsConstructor: ");
         System.out.println(personNoArgs.toString());
+        System.out.println("--------------------");
+        System.out.println("AllArgsConstructor: ");
         System.out.println(personAllArgs.toString());
 
         // getCaloriesRequiredPerDay print tests
-        System.out.println(personNoArgs.getStepGoal());
-        System.out.println(personAllArgs.getStepGoal());
+        System.out.println("--------------------");
+        System.out.println("NoArgsConstructor: ");
+        System.out.println("Step Goal: " + personNoArgs.getStepGoal());
+        System.out.println("--------------------");
+        System.out.println("AllArgsConstructor: ");
+        System.out.println("Step Goal: " + personAllArgs.getStepGoal());
+        System.out.println("--------------------");
     }
 
 }
