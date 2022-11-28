@@ -30,7 +30,6 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
@@ -39,7 +38,7 @@ import lombok.NonNull;
 public class StepLog {
     // automatic unique identifier for stepLog record
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -48,8 +47,12 @@ public class StepLog {
     @Positive
     private int steps;
 
-    public StepLog(Date date, int steps) {
+    @Positive
+    private int calories;
+
+    public StepLog(Date date, int steps, int calories) {
         this.date = date;
         this.steps = steps;
+        this.calories = calories;
     }
 }

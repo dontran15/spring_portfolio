@@ -141,7 +141,7 @@ public class PersonApiController {
 
     }
 
-    @PostMapping(value = "/stepTrackerReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stepTrackerReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonNode> personStatistics(@PathVariable long id)
             throws JsonMappingException, JsonProcessingException {
         // find ID
@@ -166,14 +166,13 @@ public class PersonApiController {
     @PostMapping(value = "/setStepLog", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> personStepLog(@RequestParam("id") long id,
             @RequestParam("date") String dateString,
-            @RequestParam("steps") int steps) {
+            @RequestParam("steps") int steps,
+            @RequestParam("calories") int calories) {
 
         // find the person by ID
         Optional<Person> optional = repository.findById((id));
         if (optional.isPresent()) { // Good ID
             Person person = optional.get(); // value from findByID
-
-            List<StepLog> stepLogs = new ArrayList<StepLog>();
 
             Date date;
             try {
@@ -182,9 +181,8 @@ public class PersonApiController {
                 return new ResponseEntity<>(dateString + " error; try MM-dd-yyyy", HttpStatus.BAD_REQUEST);
             }
 
-            StepLog stepLog = new StepLog(date, steps);
-            stepLogs.add(stepLog);
-            // person.setStepLogs(stepLogs);
+            StepLog stepLog = new StepLog(date, steps, calories);
+            person.getStepLogs().add(stepLog);
 
             repository.save(person); // conclude by writing the stats updates
 
@@ -194,6 +192,28 @@ public class PersonApiController {
         // return Bad ID
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+    }
+
+    @GetMapping(value = "/stepLogsReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<JsonNode> personStepLogStats(@PathVariable long id)
+            throws JsonMappingException, JsonProcessingException {
+        // find ID
+        Optional<Person> optional = repository.findById((id));
+
+        // Backend
+        if (optional.isPresent()) { // Good ID
+            Person person = optional.get(); // value from findByID
+            StepTracker tr = new StepTracker(person.getStepGoal()); // initialize tracker
+
+            // Turn stats Object into JSON
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(tr.stepLogExerciseReport(person)); // this requires exception handling
+
+            // return Person with update Stats
+            return new ResponseEntity<>(json, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
 }

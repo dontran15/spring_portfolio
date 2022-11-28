@@ -36,14 +36,39 @@ public class StepTracker {
         return caloriesConsumed;
     }
 
+    public double caloriesConsumedStepLog(Person person) {
+        List<StepLog> stepLogs = person.getStepLogs();
+        double caloriesConsumed = 0.0;
+
+        for (StepLog stepLog : stepLogs) {
+            caloriesConsumed += (int) stepLog.getCalories();
+        }
+
+        return caloriesConsumed;
+    }
+
     public double netCalories(Person person) {
         return caloriesConsumed(person) - caloriesBurnt(person);
+    }
+
+    public double netCaloriesStepLog(Person person) {
+        return caloriesConsumedStepLog(person) - caloriesBurnt(person);
     }
 
     public String netWeightReport(Person person) {
         if (netCalories(person) > 200) {
             return "\"Gaining weight\"";
         } else if (netCalories(person) < -200) {
+            return "\"Losing weight\"";
+        } else {
+            return "\"Maintaining current weight\"";
+        }
+    }
+
+    public String netWeightReportStepLog(Person person) {
+        if (netCaloriesStepLog(person) > 200) {
+            return "\"Gaining weight\"";
+        } else if (netCaloriesStepLog(person) < -200) {
             return "\"Losing weight\"";
         } else {
             return "\"Maintaining current weight\"";
@@ -72,6 +97,30 @@ public class StepTracker {
                 + "\"caloriesBurnt\": "
                 + caloriesBurnt(person) + ", " + "\"netCalories\": " + this.netCalories(person) + ", "
                 + "\"netWeightReport\": " + netWeightReport(person) + ", " + "\"stats\": " + statsJson + " }");
+    }
+
+    public void calculateStepLogs(Person person) {
+        List<StepLog> stepLogs = person.getStepLogs();
+        setDaysRecorded(stepLogs.size());
+
+        for (StepLog stepLog : stepLogs) {
+            addDailySteps((int) stepLog.getSteps());
+        }
+    }
+
+    public String stepLogExerciseReport(Person person) throws JsonMappingException, JsonProcessingException {
+        this.calculateStepLogs(person);
+
+        ObjectWriter objWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String statsJson = objWriter.writeValueAsString(person.getStepLogs());
+
+        return ("{ \"personID\": " + person.getId() + ", " + "\"stepGoal\": " + this.stepGoal + ", "
+                + "\"totalSteps\": "
+                + this.totalSteps + ", " + "\"daysRecorded\": " + this.daysRecorded + ", " + "\"activeDays\": "
+                + activeDays() + ", " + "\"caloriesConsumed\": " + caloriesConsumedStepLog(person) + ", "
+                + "\"caloriesBurnt\": "
+                + caloriesBurnt(person) + ", " + "\"netCalories\": " + this.netCaloriesStepLog(person) + ", "
+                + "\"netWeightReport\": " + netWeightReportStepLog(person) + ", " + "\"stats\": " + statsJson + " }");
     }
 
     // FRQ Methods

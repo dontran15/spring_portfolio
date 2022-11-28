@@ -86,8 +86,8 @@ public class Person {
     private String gender;
 
     // one Person has many StepLogs (relationship)
-    // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    // private List<StepLog> stepLogs = new ArrayList<>();
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StepLog> stepLogs = new ArrayList<>();
 
     /*
      * HashMap is used to store JSON for daily "stats"
@@ -149,6 +149,12 @@ public class Person {
         }
 
         return -1;
+    }
+
+    public void stepLogStats() {
+        for (StepLog stepLog : stepLogs) {
+
+        }
     }
 
     // toString Method
